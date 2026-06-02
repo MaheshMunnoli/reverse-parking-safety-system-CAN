@@ -1,7 +1,7 @@
 /*=============================================================
- * header.h - Node A
+ * header.h - Node B
  * Project : Reverse Parking Safety System
- * Node    : Node A (Gear Detection + Buzzer Control)
+ * Node    : Node B (Ultrasonic Sensor + CAN Response)
  * Board   : Rhydolabz LPC2129
  * Compiler: Keil uVision (ARM)
  * Date    : 2025
@@ -25,8 +25,14 @@ typedef signed char         s8;
 /*-------------------------------------------------------------
  * Pin Definitions
  *-------------------------------------------------------------*/
-#define LED_PIN         (1<<18)   /* P0.18 - LED indicator     */
-#define BUZZER_PIN      (1<<21)   /* P0.21 - Buzzer output     */
+#define TRIG_PIN    (1 << 11)   /* P0.11 - Ultrasonic TRIG output    */
+#define ECHO_PIN    (1 << 10)   /* P0.10 - Ultrasonic ECHO input     */
+
+/*-------------------------------------------------------------
+ * Sensor Fault Code
+ * Returned by dis() when ECHO signal not detected (timeout)
+ *-------------------------------------------------------------*/
+#define SENSOR_FAULT    999
 
 /*-------------------------------------------------------------
  * CAN Message Structure
@@ -49,28 +55,31 @@ extern void delay_us(u32 us);
 extern void delay_sec(u32 sec);
 
 /*-------------------------------------------------------------
- * CAN Driver Declarations (nodeA_can_driver.c)
+ * CAN Driver Declarations (nodeB_can_driver.c)
  *-------------------------------------------------------------*/
 extern void can1_init(void);
 extern void can1_tx(CAN1 v);
 extern void can1_rx(CAN1 *ptr);
 
 /*-------------------------------------------------------------
- * UART Driver Declarations (nodeA_uart_driver.c)
+ * CAN RX Interrupt Declarations (nodeB_receive_intr.c)
+ *-------------------------------------------------------------*/
+extern void config_vic_for_rx_can1(void);
+
+/*-------------------------------------------------------------
+ * UART Driver Declarations (nodeB_uart_driver.c)
  *-------------------------------------------------------------*/
 extern void uart_init(u32 baud);
 extern void uart_tx(u8 data);
 extern u8   uart_rx(void);
 extern void uart_tx_str(char *str);
 extern void uart_integer(int num);
-extern void uart_float(float num);
+extern void uart_float(double num);
 
 /*-------------------------------------------------------------
- * Interrupt & Timer Declarations
- * (nodeA_sw_interrupt.c, nodeA_timer_intr.c)
+ * Ultrasonic Sensor Declaration (nodeB_ultrasonic.c)
  *-------------------------------------------------------------*/
-extern void config_vic_for_eint0(void);
-extern void timer1_init(void);
-extern void update_buzzer(int distance);
+extern unsigned int dis(void);   /* Returns distance in cm,
+                                    999 on sensor fault/timeout  */
 
 #endif /* HEADER_H */
